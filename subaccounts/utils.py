@@ -279,6 +279,285 @@ def buy_phone_number_with_retries(business_name, business_phone, max_retries=3):
         return phone
     
 
+def a2p_ein_business_reg(driver, actions, sub_user):
+    print()
+    print("On business details page")
+
+    ## Business Details
+    classic_inputs  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
+    # Legal Business Name
+    legal_business_name_input = classic_inputs[0]
+    legal_business_name_input.click()
+    legal_business_name_input.clear()
+    time.sleep(0.5)
+    legal_business_name_input.send_keys(Keys.BACK_SPACE * 50)
+    legal_business_name_input.send_keys(sub_user.legal_business_name)
+    print("\nEntered business name")
+
+    # Business Type (Select field)
+    driver.find_element(By.ID, "SelectBusinessType").click()
+    time.sleep(2)
+    business_types = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
+    for i, bus in enumerate(business_types):
+        if sub_user.business_type == bus.text:
+            bus.click() 
+    print()
+    print("Selected business type")
+
+
+    # Business Registration ID Type (Select field, select the first option)
+    driver.find_element(By.ID, "SelectBusinessRegistrationType").click()
+    time.sleep(2)
+    business_registration_ids = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
+    business_registration_ids[5].click()
+    print()
+    print("Selected business registration type")
+
+
+    # Business Registration Number
+    business_registration_number_input = classic_inputs[1]
+    business_registration_number_input.click()
+    business_registration_number_input.clear()
+    time.sleep(0.5)
+    business_registration_number_input.send_keys(Keys.BACK_SPACE * 50)
+    business_registration_number_input.send_keys(sub_user.ein)
+    print("\nEntered business number")
+
+    # Business Industry (Select field)
+    # Scrollable container that holds the options
+    business_industries_element = driver.find_element(By.ID, "SelectBusinessIndustry")
+    business_industries_element.click()
+    time.sleep(2)
+
+    scrollable_div = driver.find_elements(By.CSS_SELECTOR, "div.n-scrollbar")[0]
+
+    # Set the initial scroll position and the amount to scroll each time
+    scroll_increment = 50  # The amount of pixels to scroll each time
+    scroll_position = 0  # Initial scroll position
+
+    # Get the current scrollHeight of the content
+    scroll_height = driver.execute_script("return arguments[0].scrollHeight", scrollable_div)
+    # Keep scrolling in increments until the bottom is reached
+    while scroll_position < scroll_height:
+        # Scroll down in the div
+        driver.execute_script("arguments[0].scrollTop = arguments[1]", scrollable_div, scroll_position)
+        
+        # Wait a bit for potentially lazy-loaded content to load
+        time.sleep(0.1)
+        
+        # Update the scroll position and scrollHeight
+        scroll_position += scroll_increment
+        new_scroll_height = driver.execute_script("return arguments[0].scrollHeight", scrollable_div)
+        
+        # Check if the scrollHeight has changed due to new content being loaded and update if so
+        if new_scroll_height > scroll_height:
+            scroll_height = new_scroll_height
+        else:
+            # If no new content, break the loop as we have likely reached the bottom
+            break
+        print("\n", scroll_height, scroll_position, new_scroll_height)
+
+    # Get all the loaded options
+    business_industries_options = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
+
+    # Search for the desired industry and click it if found
+    industry_found = False
+    for option in business_industries_options:
+        if option.text == sub_user.industry:
+            option.click()
+            print(f"\nEntered business Engineering: {option.text}")
+            industry_found = True
+            break
+
+    # If the desired industry is not found, select 'Online'
+    if not industry_found:
+        for option in business_industries_options:
+            if option.text == 'Engineering':
+                option.click()
+                print("\nIndustry doesn't match, selected Engineering.....")
+                break
+
+    # Business Email
+    business_email_input = classic_inputs[2]
+    business_email_input.click()  # Focus on the input field
+    business_email_input.clear()  # Clear the field
+    time.sleep(0.5)  # Short delay to allow the field to clear
+    business_email_input.send_keys(Keys.BACK_SPACE * 50)  # Ensure the field is cleared by sending backspace
+    business_email_input.send_keys(sub_user.business_email)
+    print("\nEntered business email")
+
+    # Website URL
+    website_url_input = classic_inputs[3]
+    website_url_input.click()
+    website_url_input.clear()
+    time.sleep(0.5)
+    website_url_input.send_keys(Keys.BACK_SPACE * 50)
+    website_url_input.send_keys(sub_user.website)
+    print("\nEntered business url")
+
+    # Business Region of Operations (Select field)
+    # Find all checkbox elements for Business Region of Operations
+    region_checkboxes = driver.find_elements(By.CSS_SELECTOR, "div.n-checkbox")
+
+    # Create a list of region labels from the checkbox elements
+    region_labels = [checkbox.find_element(By.CSS_SELECTOR, "span.n-checkbox__label").text for checkbox in region_checkboxes]
+
+    # Business Region of Operations
+    # Click the checkboxes based on the sub_user's business region operations
+    selected_regions = sub_user.business_region_operation.split(' ')  
+    for checkbox, label in zip(region_checkboxes, region_labels):
+        # If the label is in sub_user's business regions, or if none are and label is 'USA & Canada', click the checkbox
+        if label in selected_regions or (not any(region in selected_regions for region in region_labels) and label == "USA & Canada"):
+            checkbox.click()
+
+    print()
+    print("Selected business region of operations")
+
+    # Continue to the next form
+    _continue = WebDriverWait(driver, 180).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+    )
+    actions.move_to_element(_continue)
+    actions.click()
+    actions.perform()  
+    print()
+    print("Clicked continue ")
+
+    time.sleep(5)
+
+
+def a2p_ein_business_add(driver, actions, sub_user):
+
+    ## Business Street Address
+    
+    classic_inputs  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
+
+    street_address = classic_inputs[0]
+    street_address.click()
+    street_address.clear()
+    time.sleep(0.5)
+    street_address.send_keys(Keys.BACK_SPACE * 50)
+    street_address.send_keys(sub_user.address)
+    print("\nBusiness Street Address")
+
+    ## Business City
+    city = classic_inputs[1]
+    city.click()
+    city.clear()
+    time.sleep(0.5)
+    city.send_keys(Keys.BACK_SPACE * 50)
+    city.send_keys(sub_user.city)
+    print("\nBusiness City")
+
+    ## Business zip code
+    postal = classic_inputs[2]
+    postal.click()
+    postal.clear()
+    time.sleep(0.5)
+    postal.send_keys(Keys.BACK_SPACE * 50)
+    postal.send_keys(sub_user.zip_code)
+    print("\nBusiness Zip Code")
+
+
+    # Continue to the next form
+    _continue = WebDriverWait(driver, 180).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+    )
+    actions.move_to_element(_continue)
+    actions.click()
+    actions.perform()  
+    print()
+    print("Clicked continue ")
+
+    time.sleep(5)
+
+
+def a2p_ein_business_contact(driver, actions, sub_user):
+    ## First Name
+    
+    classic_inputs  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
+
+    first_name = classic_inputs[0]
+    first_name.click()
+    first_name.clear()
+    time.sleep(0.5)
+    first_name.send_keys(Keys.BACK_SPACE * 50)
+    first_name.send_keys(sub_user.first_name)
+    print("\n First Name entered")
+
+    ## Last Name
+    last_name = classic_inputs[1]
+    last_name.click()
+    last_name.clear()
+    time.sleep(0.5)
+    last_name.send_keys(Keys.BACK_SPACE * 50)
+    last_name.send_keys(sub_user.last_name)
+    print("\n Last Name entered")
+
+    ## Contact Email
+    contact_email = classic_inputs[2]
+    contact_email.click()
+    contact_email.clear()
+    time.sleep(0.5)
+    contact_email.send_keys(Keys.BACK_SPACE * 50)
+    contact_email.send_keys(sub_user.contact_email)
+    print("\n Contact Email entered")
+
+
+    ## Contact Phone
+    contact_phone = classic_inputs[3]
+    contact_phone.click()
+    contact_phone.clear()
+    time.sleep(0.5)
+    contact_phone.send_keys(Keys.BACK_SPACE * 50)
+    contact_phone.send_keys(sub_user.contact_phone)
+    print("\n Contact Phone entered")
+
+    ## Job position
+    driver.find_element(By.CSS_SELECTOR, "div#SelectCountry").click()
+    driver.find_element(By.CSS_SELECTOR, "div.n-base-selection-input__content").click()
+
+    time.sleep(5)
+
+    job_position  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
+    print(len(job_position), "boost")
+    job_position.click()
+    job_position.clear()
+    time.sleep(0.5)
+    job_position.send_keys(Keys.BACK_SPACE * 50)
+    job_position.send_keys(sub_user.job_position)
+    print("\n Job position entered")
+
+    # Continue to the next form
+    _continue = WebDriverWait(driver, 180).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+    )
+    actions.move_to_element(_continue)
+    actions.click()
+    actions.perform()  
+    print()
+    print("Clicked continue ")
+
+    time.sleep(5)
+
+
+def a2p_ein_business_use_case(driver, actions):
+
+    time.sleep(2)
+    driver.find_element(By.CSS_SELECTOR, "div.n-checkbox-box__border").click()
+
+    # Continue to the next form
+    _continue = WebDriverWait(driver, 180).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+    )
+    actions.move_to_element(_continue)
+    actions.click()
+    actions.perform()  
+    print()
+    print("Clicked continue ")
+
+    time.sleep(5)
+
 def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_PASSWORD, EMAIL, EMAIL_PASSWORD):
     # Navigate to the login page
 
@@ -427,157 +706,35 @@ def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_
             print()
             print("Selected ein radio button")
 
-        # Continue to the next form
-        _continue = WebDriverWait(driver, 180).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
-        )
-        actions.move_to_element(_continue)
-        actions.click()
-        actions.perform()  
-        print()
-        print("clicked continue")
+            # Continue to the next form
+            _continue = WebDriverWait(driver, 180).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+            )
+            actions.move_to_element(_continue)
+            actions.click()
+            actions.perform()  
+            print()
+            print("clicked continue")
 
-        print()
-        print("On business details page")
+            # business details registration
+            a2p_ein_business_reg(driver, actions, sub_user)
 
-        ## Business Details
-        classic_inputs  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
-        # Legal Business Name
-        legal_business_name_input = classic_inputs[0]
-        legal_business_name_input.click()
-        legal_business_name_input.clear()
-        time.sleep(0.5)
-        legal_business_name_input.send_keys(Keys.BACK_SPACE * 50)
-        legal_business_name_input.send_keys(sub_user.legal_business_name)
-        print("\nEntered business name")
+            # business address registration
+            a2p_ein_business_add(driver, actions, sub_user)
 
-        # Business Type (Select field)
-        driver.find_element(By.ID, "SelectBusinessType").click()
-        time.sleep(2)
-        business_types = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
-        for i, bus in enumerate(business_types):
-            if sub_user.business_type == bus.text:
-                bus.click() 
+            # business contact info
+            a2p_ein_business_contact(driver, actions, sub_user)
 
-        print()
-        print("Selected business type")
+            # business use case
+            a2p_ein_business_use_case(driver, actions)
 
-
-        # Business Registration ID Type (Select field, select the first option)
-        driver.find_element(By.ID, "SelectBusinessRegistrationType").click()
-        time.sleep(2)
-        business_registration_ids = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
-        business_registration_ids[5].click()
-        print()
-        print("Selected business registration type")
-
-
-        # Business Registration Number
-        business_registration_number_input = classic_inputs[1]
-        business_registration_number_input.click()
-        business_registration_number_input.clear()
-        time.sleep(0.5)
-        business_registration_number_input.send_keys(Keys.BACK_SPACE * 50)
-        business_registration_number_input.send_keys(sub_user.ein)
-        print("\nEntered business number")
-
-        # Business Industry (Select field)
-        # Scrollable container that holds the options
-        business_industries_element = driver.find_element(By.ID, "SelectBusinessIndustry")
-        business_industries_element.click()
-        time.sleep(2)
-
-        scrollable_div = driver.find_elements(By.CSS_SELECTOR, "div.v-vl-items")[2]
-        # Scroll to the bottom of the options to ensure all are loaded
-        driver.execute_script("var scrollableDiv = arguments[0]; scrollableDiv.scrollTop = scrollableDiv.scrollHeight;", scrollable_div)
-
-        # Wait for the options to load (you might need to adjust this time based on how long it takes to load the options)
-        time.sleep(2)
-
-        # Get all the loaded options
-        business_industries_options = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
-
-        # Search for the desired industry and click it if found
-        industry_found = False
-        for option in business_industries_options:
-            if option.text == sub_user.industry:
-                option.click()
-                print(f"\nEntered business industry: {option.text}")
-                industry_found = True
-                break
-
-        # If the desired industry is not found, select 'Online'
-        if not industry_found:
-            for option in business_industries_options:
-                if option.text == 'Engineering':
-                    option.click()
-                    print("\nIndustry doesn't match, selected Engineering.....")
-                    break
-        
-        # Business Email
-        business_email_input = classic_inputs[2]
-        business_email_input.click()  # Focus on the input field
-        business_email_input.clear()  # Clear the field
-        time.sleep(0.5)  # Short delay to allow the field to clear
-        business_email_input.send_keys(Keys.BACK_SPACE * 50)  # Ensure the field is cleared by sending backspace
-        business_email_input.send_keys(sub_user.business_email)
-        print("\nEntered business email")
-
-        # Website URL
-        website_url_input = classic_inputs[3]
-        website_url_input.click()
-        website_url_input.clear()
-        time.sleep(0.5)
-        website_url_input.send_keys(Keys.BACK_SPACE * 50)
-        website_url_input.send_keys(sub_user.website)
-        print("\nEntered business url")
-
-        # Business Region of Operations (Select field)
-        # Find all checkbox elements for Business Region of Operations
-        region_checkboxes = driver.find_elements(By.CSS_SELECTOR, "div.n-checkbox")
-
-        # Create a list of region labels from the checkbox elements
-        region_labels = [checkbox.find_element(By.CSS_SELECTOR, "span.n-checkbox__label").text for checkbox in region_checkboxes]
-
-        # Business Region of Operations
-        # Click the checkboxes based on the sub_user's business region operations
-        selected_regions = sub_user.business_region_operation.split(' ')  
-        for checkbox, label in zip(region_checkboxes, region_labels):
-            # If the label is in sub_user's business regions, or if none are and label is 'USA & Canada', click the checkbox
-            if label in selected_regions or (not any(region in selected_regions for region in region_labels) and label == "USA & Canada"):
-                checkbox.click()
-
-        print()
-        print("Selected business region of operations")
-
-        # Continue to the next form
-        _continue = WebDriverWait(driver, 180).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
-        )
-        actions.move_to_element(_continue)
-        actions.click()
-        actions.perform()  
-        print()
-        print("Clicked continue ")
-
-        time.sleep(5)
-        
-        # Continue to the next form
-        _continue = WebDriverWait(driver, 180).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
-        )
-        actions.move_to_element(_continue)
-        actions.click()
-        actions.perform()  
-        print()
-        print("Clicked continue ")
-
-        time.sleep(5)
+            time.sleep(10)
 
 
     except Exception as e:
         print()
         print(f"Operation failed. Error: {e}")
+
 
 def a2pregister_with_retries(sub_user, max_retries=1):
     # CHROME_DRIVER_PATH = "path/to/chromedriver"
@@ -612,7 +769,6 @@ def a2pregister_with_retries(sub_user, max_retries=1):
                 time.sleep(5)
             else:
                 raise Exception(f"Maximum retries reached")
-
 
 
 def generate_dynamic_mapping(csv_columns, model_fields):
