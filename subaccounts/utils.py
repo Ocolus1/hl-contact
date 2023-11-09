@@ -9,12 +9,45 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from django.conf import settings
-import re
+import re, os
 
 
 import imaplib
 import email
 
+def import_text_file(file_name):
+    # Define the path to the text_files directory
+    file_path = os.path.join(os.path.dirname(__file__), 'help_text', file_name)
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
+
+
+def replace_placeholder(text, business_name):
+    return text.format(business_name)
+
+
+def replace_placeholders(text, *args):
+    return text.format(*args)
+
+
+def select_checkboxes(driver):
+    # Find all elements with the CSS selector 'div.n-checkbox'
+    checkboxes = driver.find_elements(By.CSS_SELECTOR, "div.n-checkbox")
+
+    # Iterate over the checkboxes
+    for checkbox in checkboxes:
+        # Get the class attribute of the checkbox
+        class_attribute = checkbox.get_attribute('class')
+
+        # Check if it only has 'n-checkbox' and not 'n-checkbox--checked'
+        if 'n-checkbox--checked' not in class_attribute:
+            # If it's not checked, click on the checkbox
+            checkbox.click()
+            print("\nCheckbox clicked.")
+        else:
+            # If it's already checked, skip it
+            print("\nCheckbox is already checked. Skipping.")
 
 
 def otp_verification(driver, USER_EMAIL, USER_EMAIL_PASSWORD):
@@ -420,13 +453,12 @@ def a2p_ein_business_reg(driver, actions, sub_user):
     actions.move_to_element(_continue)
     actions.click()
     actions.perform()  
-    print()
-    print("Clicked continue ")
+    print("\nClicked continue")
 
     time.sleep(5)
 
 
-def a2p_ein_business_add(driver, actions, sub_user):
+def a2p_ein_business_add(driver, sub_user):
 
     ## Business Street Address
     
@@ -460,19 +492,15 @@ def a2p_ein_business_add(driver, actions, sub_user):
 
 
     # Continue to the next form
-    _continue = WebDriverWait(driver, 180).until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
-    )
-    actions.move_to_element(_continue)
-    actions.click()
-    actions.perform()  
+    driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
     print()
     print("Clicked continue ")
 
     time.sleep(5)
 
 
-def a2p_ein_business_contact(driver, actions, sub_user):
+def a2p_ein_business_contact(driver, sub_user):
+    time.sleep(1)
     ## First Name
     
     classic_inputs  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
@@ -483,7 +511,7 @@ def a2p_ein_business_contact(driver, actions, sub_user):
     time.sleep(0.5)
     first_name.send_keys(Keys.BACK_SPACE * 50)
     first_name.send_keys(sub_user.first_name)
-    print("\n First Name entered")
+    print("\nFirst Name entered")
 
     ## Last Name
     last_name = classic_inputs[1]
@@ -492,7 +520,7 @@ def a2p_ein_business_contact(driver, actions, sub_user):
     time.sleep(0.5)
     last_name.send_keys(Keys.BACK_SPACE * 50)
     last_name.send_keys(sub_user.last_name)
-    print("\n Last Name entered")
+    print("\nLast Name entered")
 
     ## Contact Email
     contact_email = classic_inputs[2]
@@ -501,40 +529,34 @@ def a2p_ein_business_contact(driver, actions, sub_user):
     time.sleep(0.5)
     contact_email.send_keys(Keys.BACK_SPACE * 50)
     contact_email.send_keys(sub_user.contact_email)
-    print("\n Contact Email entered")
-
+    print("\nContact Email entered")
 
     ## Contact Phone
+    print("Getting email")
     contact_phone = classic_inputs[3]
     contact_phone.click()
     contact_phone.clear()
     time.sleep(0.5)
     contact_phone.send_keys(Keys.BACK_SPACE * 50)
     contact_phone.send_keys(sub_user.contact_phone)
-    print("\n Contact Phone entered")
+    print("\nContact Phone entered")
 
     ## Job position
     driver.find_element(By.CSS_SELECTOR, "div#SelectCountry").click()
-    driver.find_element(By.CSS_SELECTOR, "div.n-base-selection-input__content").click()
+    driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")[6].click()
 
     time.sleep(5)
 
-    job_position  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
-    print(len(job_position), "boost")
+    job_position  = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")[4]
     job_position.click()
     job_position.clear()
     time.sleep(0.5)
     job_position.send_keys(Keys.BACK_SPACE * 50)
     job_position.send_keys(sub_user.job_position)
-    print("\n Job position entered")
+    print("\nJob position entered")
 
     # Continue to the next form
-    _continue = WebDriverWait(driver, 180).until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
-    )
-    actions.move_to_element(_continue)
-    actions.click()
-    actions.perform()  
+    driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
     print()
     print("Clicked continue ")
 
@@ -542,9 +564,11 @@ def a2p_ein_business_contact(driver, actions, sub_user):
 
 
 def a2p_ein_business_use_case(driver, actions):
-
+    print("\nEntering Brand details")
     time.sleep(2)
     driver.find_element(By.CSS_SELECTOR, "div.n-checkbox-box__border").click()
+    time.sleep(0.7)
+    print("\n Checked agreement box")
 
     # Continue to the next form
     _continue = WebDriverWait(driver, 180).until(
@@ -553,6 +577,109 @@ def a2p_ein_business_use_case(driver, actions):
     actions.move_to_element(_continue)
     actions.click()
     actions.perform()  
+    print("\nClicked continue ")
+
+    time.sleep(5)
+
+
+def a2p_ein_campaign_details(driver, actions, sub_user):
+    print("\nEntering Campaign details")
+
+    time.sleep(2)
+    driver.find_element(By.CSS_SELECTOR, "div#SelectCampaignUsecase").click()
+    time.sleep(1)
+
+    campaign_use_case = driver.find_elements(By.CSS_SELECTOR, "div.n-base-selection-input__content")
+    campaign_use_case[0].click()
+
+    print("\nCampaign use case selected")
+
+    classic_inputs = driver.find_elements(By.CSS_SELECTOR, "textarea.n-input__textarea-el")
+    
+    # Importing text file contents
+    use_case_des = import_text_file('use_case_des.txt')
+    sample_msg_1 = import_text_file('sample_msg_1.txt')
+    sample_msg_2 = import_text_file('sample_msg_2.txt')
+
+    # Fill the textareas with the content, replacing placeholders with business name
+    classic_inputs[0].click()
+    classic_inputs[0].clear()
+    time.sleep(0.5)
+    classic_inputs[0].send_keys(Keys.BACK_SPACE * 50)
+    classic_inputs[0].send_keys(use_case_des)
+    print("\nUse case description entered")
+
+
+    classic_inputs[1].click()
+    classic_inputs[1].clear()
+    time.sleep(0.5)
+    classic_inputs[1].send_keys(Keys.BACK_SPACE * 50)
+    classic_inputs[1].send_keys(replace_placeholder(sample_msg_1, sub_user.business_name))
+    print("\nSample message 1 entered")
+
+
+    classic_inputs[2].click()
+    classic_inputs[2].clear()
+    time.sleep(0.5)
+    classic_inputs[2].send_keys(Keys.BACK_SPACE * 50)
+    classic_inputs[2].send_keys(replace_placeholder(sample_msg_2, sub_user.business_name))
+    print("\nSample message 2 entered")
+
+    # select the checkbox
+    select_checkboxes(driver)
+
+    time.sleep(5)
+    # Continue to the next form
+    _continue = WebDriverWait(driver, 180).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+    )
+    actions.move_to_element(_continue)
+    actions.click()
+    actions.perform()  
+    print("\nClicked continue")
+
+    time.sleep(5)
+
+
+def a2p_ein_user_content(driver, sub_user):
+    time.sleep(2)
+    print("\nEntering User Content details")
+
+    # Assuming there are text areas to fill in, just like in the previous function
+    # We will import the content of the text files and fill in the text areas, replacing placeholders
+    user_contents = driver.find_elements(By.CSS_SELECTOR, "textarea.n-input__textarea-el")
+    
+    # Fill the first textarea with the contact consent message, replacing placeholders
+    contact_consent = import_text_file('contact_consent.txt')
+    user_contents[0].click()
+    user_contents[0].clear()
+    time.sleep(0.5)
+    user_contents[0].send_keys(Keys.BACK_SPACE * 50)
+    user_contents[0].send_keys(replace_placeholders(contact_consent, sub_user.website, sub_user.business_name, sub_user.business_phone))
+    print("\nContact consent entered")
+    
+    # Fill the second textarea with keywords, no placeholders to replace
+    keywords = import_text_file('keywords.txt')
+    user_contents[1].click()
+    user_contents[1].clear()
+    time.sleep(0.5)
+    user_contents[1].send_keys(Keys.BACK_SPACE * 50)
+    user_contents[1].send_keys(keywords)
+    print("\nKeywords entered")
+    
+    # Fill the third textarea with the opt-in message, replacing placeholders
+    opt_in_msg = import_text_file('opt_in_msg.txt')
+    user_contents[2].click()
+    user_contents[2].clear()
+    time.sleep(0.5)
+    user_contents[2].send_keys(Keys.BACK_SPACE * 50)
+    user_contents[2].send_keys(replace_placeholders(opt_in_msg, sub_user.business_name, sub_user.website, sub_user.business_phone))
+    print("\nOpt in message entered")
+
+    time.sleep(5)
+
+    # Continue to the next form
+    driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
     print()
     print("Clicked continue ")
 
@@ -720,16 +847,21 @@ def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_
             a2p_ein_business_reg(driver, actions, sub_user)
 
             # business address registration
-            a2p_ein_business_add(driver, actions, sub_user)
+            a2p_ein_business_add(driver, sub_user)
 
             # business contact info
-            a2p_ein_business_contact(driver, actions, sub_user)
+            a2p_ein_business_contact(driver, sub_user)
 
             # business use case
             a2p_ein_business_use_case(driver, actions)
 
-            time.sleep(10)
+            # campaign details
+            a2p_ein_campaign_details(driver, actions, sub_user)
 
+            # user consent 
+            a2p_ein_user_content(driver, sub_user)
+
+            time.sleep(10)
 
     except Exception as e:
         print()
