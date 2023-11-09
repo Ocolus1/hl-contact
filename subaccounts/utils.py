@@ -307,6 +307,7 @@ def buy_phone_number_with_retries(business_name, business_phone, max_retries=3):
                 raise Exception(f"Maximum retries reached")
             
     if phone is not None:
+        print("\ndone....")
         driver.quit()
         return phone
     
@@ -1057,7 +1058,7 @@ def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_
         print(f"Operation failed. Error: {e}")
 
 
-def a2pregister_with_retries(sub_user, max_retries=1):
+def a2pregister_with_retries(sub_user, max_retries=3):
     # CHROME_DRIVER_PATH = "path/to/chromedriver"
 
     SUB_ACCOUNT = sub_user.business_name
@@ -1093,7 +1094,7 @@ def a2pregister_with_retries(sub_user, max_retries=1):
                 time.sleep(5)
             else:
                 raise Exception(f"Maximum retries reached")
-            
+    print("\ndone....")
     driver.quit()
     return done
 
