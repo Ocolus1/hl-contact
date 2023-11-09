@@ -1,0 +1,4 @@
+Hello [First Name],
+This is an automated message from {}. Your form has been successfully submitted! One of our team members will reach out to you soon with more details.
+Reply HELP for help, STOP to stop receiving messages.
+Data rates may apply.

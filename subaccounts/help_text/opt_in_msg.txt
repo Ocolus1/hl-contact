@@ -1,0 +1,1 @@
+Welcome to {0}! By opting in, you have agreed to receive updates & offers from us. Visit our website at {1} for more info. Need assistance? Call us or text at {2}. Reply YES to confirm your opt-in or STOP to unsubscribe.
