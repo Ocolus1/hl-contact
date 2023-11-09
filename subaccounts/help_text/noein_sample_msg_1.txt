@@ -1,0 +1,3 @@
+Hi [First Name], this is [Team Member Name] from {}! 
+We've received your request for further details and are looking forward to talking with you. You can schedule your meeting via this link: [Calendar Link] 
+Standard data rates may apply. If you wish to cease receiving messages, reply STOP or UNSUBSCRIBE. 

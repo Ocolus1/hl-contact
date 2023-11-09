@@ -1,0 +1,23 @@
+Overall SMS Use: Customer quality experience, improve business processes, and consented marketing. 
+Automatic Form Submission Responses: 
+After a customer fills out a form on our website and opts in for email/sms communication (such as a request for a quote or a support ticket), an automatic SMS confirmation is sent. This helps validate the successful submission and provides customers with an expected response timeline, improving the user experience and showing our commitment to prompt communication. 
+Confirmation Messages: 
+Confirmation SMS messages are sent post-purchase or after the booking of services, providing customers with instant reassurance of a completed transaction. These messages typically include transaction details, expected delivery dates, and contact information, boosting customer confidence and satisfaction.
+Appointment Reminders: 
+We utilize SMS as a primary mode of reminding customers about their upcoming appointments. Our automated system sends out messages 24, 12, and 1 hour before the scheduled appointment. The SMS includes details such as the date, time, location, and purpose of the appointment, reducing the likelihood of no-shows and late arrivals. 
+Direct Response: 
+SMS is utilized to solicit direct responses from our customers. These messages may be surveys seeking feedback on our products/services or calls to action, like participating in a contest. The ease and speed of response via SMS increase participation rates, aiding market research and customer interaction. 
+Invoice Links: 
+In the interest of paperless operations and convenience, our customers receive their invoices via SMS. The messages contain secure links directing to online invoices, simplifying the payment process. It increases the punctuality of payments and enables customers to maintain a digital record. 
+Direct Marketing/Promotions: 
+Our marketing department makes use of targeted SMS campaigns to promote special offers, new products, or seasonal sales. The messages are crafted to entice our customers, using personalized data to increase relevance. This direct marketing strategy has proven to drive sales and increase brand engagement. 
+Database Reactivation: 
+From time to time, our SMS platform is used to reactivate dormant customers in our database. Customized messages are crafted, promoting new offerings or incentives to engage inactive clients. This proactive approach helps foster client re-engagement and enhances customer retention. 
+Client Support: 
+Our customer service department employs SMS to facilitate the swift resolution of client queries. Automated messages acknowledge the receipt of client issues, and real-time, personalized responses ensure efficient problem-solving. This tool, combined with human interaction, streamlines customer support and promotes customer loyalty. 
+Internal Notifications: 
+Our internal communication is strengthened with SMS notifications. Reminders of meetings, task deadlines, system changes, or emergencies are sent to team members' mobile devices, ensuring real-time receipt of critical information and fostering a proactive work environment. 
+Two Factor Authentication (2FA)
+Security is reinforced through the integration of Two Factor Authentication (2FA), using SMS to deliver unique one-time codes for user identity verification during logins or transactions, thereby ensuring robust cybersecurity and customer data protection. 
+Note 
+Every form includes an SMS disclaimer, informing customers that they may receive text messages from us. In addition, most forms contain an opt-in checkbox. Every initial SMS sent includes an easy opt-out option, so customers can withdraw their consent at any time. 
