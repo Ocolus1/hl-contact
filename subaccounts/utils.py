@@ -268,7 +268,6 @@ def buy_phone_number(driver, actions, SUB_ACCOUNT, NUMBER_DIGITS, USER_EMAIL, US
         print(f"Operation failed. Error: {e}")
         
   
-
 def buy_phone_number_with_retries(business_name, business_phone, max_retries=3):
     # CHROME_DRIVER_PATH = "path/to/chromedriver"
 
@@ -532,7 +531,6 @@ def a2p_ein_business_contact(driver, sub_user):
     print("\nContact Email entered")
 
     ## Contact Phone
-    print("Getting email")
     contact_phone = classic_inputs[3]
     contact_phone.click()
     contact_phone.clear()
@@ -567,8 +565,8 @@ def a2p_ein_business_use_case(driver, actions):
     print("\nEntering Brand details")
     time.sleep(2)
     driver.find_element(By.CSS_SELECTOR, "div.n-checkbox-box__border").click()
-    time.sleep(0.7)
-    print("\n Checked agreement box")
+    print("\nChecked agreement box")
+    time.sleep(2)
 
     # Continue to the next form
     _continue = WebDriverWait(driver, 180).until(
@@ -582,7 +580,7 @@ def a2p_ein_business_use_case(driver, actions):
     time.sleep(5)
 
 
-def a2p_ein_campaign_details(driver, actions, sub_user):
+def a2p_ein_campaign_details(driver, actions, sub_user, case1, case2, case3):
     print("\nEntering Campaign details")
 
     time.sleep(2)
@@ -597,9 +595,9 @@ def a2p_ein_campaign_details(driver, actions, sub_user):
     classic_inputs = driver.find_elements(By.CSS_SELECTOR, "textarea.n-input__textarea-el")
     
     # Importing text file contents
-    use_case_des = import_text_file('use_case_des.txt')
-    sample_msg_1 = import_text_file('sample_msg_1.txt')
-    sample_msg_2 = import_text_file('sample_msg_2.txt')
+    use_case_des = import_text_file(case1)
+    sample_msg_1 = import_text_file(case2)
+    sample_msg_2 = import_text_file(case3)
 
     # Fill the textareas with the content, replacing placeholders with business name
     classic_inputs[0].click()
@@ -641,7 +639,7 @@ def a2p_ein_campaign_details(driver, actions, sub_user):
     time.sleep(5)
 
 
-def a2p_ein_user_content(driver, sub_user):
+def a2p_ein_user_content(driver, sub_user , case1, case2, case3):
     time.sleep(2)
     print("\nEntering User Content details")
 
@@ -650,7 +648,7 @@ def a2p_ein_user_content(driver, sub_user):
     user_contents = driver.find_elements(By.CSS_SELECTOR, "textarea.n-input__textarea-el")
     
     # Fill the first textarea with the contact consent message, replacing placeholders
-    contact_consent = import_text_file('contact_consent.txt')
+    contact_consent = import_text_file(case1)
     user_contents[0].click()
     user_contents[0].clear()
     time.sleep(0.5)
@@ -659,7 +657,7 @@ def a2p_ein_user_content(driver, sub_user):
     print("\nContact consent entered")
     
     # Fill the second textarea with keywords, no placeholders to replace
-    keywords = import_text_file('keywords.txt')
+    keywords = import_text_file(case2)
     user_contents[1].click()
     user_contents[1].clear()
     time.sleep(0.5)
@@ -668,7 +666,7 @@ def a2p_ein_user_content(driver, sub_user):
     print("\nKeywords entered")
     
     # Fill the third textarea with the opt-in message, replacing placeholders
-    opt_in_msg = import_text_file('opt_in_msg.txt')
+    opt_in_msg = import_text_file(case3)
     user_contents[2].click()
     user_contents[2].clear()
     time.sleep(0.5)
@@ -678,12 +676,165 @@ def a2p_ein_user_content(driver, sub_user):
 
     time.sleep(5)
 
+    # # Continue to the next form
+    # driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
+    # print()
+    # print("Clicked continue ")
+
+    # time.sleep(5)
+
+
+# NO EIN
+def a2p_no_ein_bus_details(driver, sub_user):
+    time.sleep(3)
+
+    print("\nEntering Business details")
+
+    business_name = driver.find_element(By.CSS_SELECTOR, "input.n-input__input-el")
+    business_name.click()
+    business_name.clear()
+    time.sleep(0.5)
+    business_name.send_keys(Keys.BACK_SPACE * 50)
+    business_name.send_keys(sub_user.business_name)
+    print("\nBusiness Name entered")
+
+    time.sleep(1)
+
     # Continue to the next form
     driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
     print()
     print("Clicked continue ")
 
-    time.sleep(5)
+    time.sleep(3)
+
+
+def a2p_no_ein_bus_address(driver, sub_user):
+
+    print("\nEntering Business Address")
+
+    classic_inputs = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
+
+    street_address = classic_inputs[0]
+    street_address.click()
+    street_address.clear()
+    time.sleep(0.5)
+    street_address.send_keys(Keys.BACK_SPACE * 50)
+    street_address.send_keys(sub_user.address)
+    print("\nBusiness address entered")
+
+    city = classic_inputs[1]
+    city.click()
+    city.clear()
+    time.sleep(0.5)
+    city.send_keys(Keys.BACK_SPACE * 50)
+    city.send_keys(sub_user.city)
+    print("\nCity entered")
+
+    zip_code = classic_inputs[2]
+    zip_code.click()
+    zip_code.clear()
+    time.sleep(0.5)
+    zip_code.send_keys(Keys.BACK_SPACE * 50)
+    zip_code.send_keys(sub_user.zip_code)
+    print("\nZip code entered")
+
+    time.sleep(1)
+
+    # Continue to the next form
+    driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
+    print()
+    print("Clicked continue ")
+
+    time.sleep(3)
+
+
+def a2p_no_ein_brand_details(driver, sub_user):
+
+    print("\nEntering Brand Details")
+
+    classic_inputs = driver.find_elements(By.CSS_SELECTOR, "input.n-input__input-el")
+
+    business_name = classic_inputs[0]
+    business_name.click()
+    business_name.clear()
+    time.sleep(0.5)
+    business_name.send_keys(Keys.BACK_SPACE * 50)
+    business_name.send_keys(sub_user.business_name)
+    print("\nBusiness brand name entered")
+
+
+    # Business Industry (Select field)
+    business_industries_element = driver.find_element(By.ID, "SelectBusinessIndustry")
+    business_industries_element.click()
+    time.sleep(2)
+
+    scrollable_div = driver.find_element(By.CSS_SELECTOR, "div.n-scrollbar")
+
+    # Set the initial scroll position and the amount to scroll each time
+    scroll_increment = 50  # The amount of pixels to scroll each time
+    scroll_position = 0  # Initial scroll position
+
+    # Get the current scrollHeight of the content
+    scroll_height = driver.execute_script("return arguments[0].scrollHeight", scrollable_div)
+    # Keep scrolling in increments until the bottom is reached
+    while scroll_position < scroll_height:
+        # Scroll down in the div
+        driver.execute_script("arguments[0].scrollTop = arguments[1]", scrollable_div, scroll_position)
+        
+        # Wait a bit for potentially lazy-loaded content to load
+        time.sleep(0.1)
+        
+        # Update the scroll position and scrollHeight
+        scroll_position += scroll_increment
+        new_scroll_height = driver.execute_script("return arguments[0].scrollHeight", scrollable_div)
+        
+        # Check if the scrollHeight has changed due to new content being loaded and update if so
+        if new_scroll_height > scroll_height:
+            scroll_height = new_scroll_height
+        else:
+            # If no new content, break the loop as we have likely reached the bottom
+            break
+        print("\n", scroll_height, scroll_position, new_scroll_height)
+
+    # Get all the loaded options
+    business_industries_options = driver.find_elements(By.CSS_SELECTOR, "div.n-base-select-option__content")
+
+    # Search for the desired industry and click it if found
+    industry_found = False
+    for option in business_industries_options:
+        if option.text == sub_user.industry:
+            option.click()
+            print(f"\nEntered business Professional: {option.text}")
+            industry_found = True
+            break
+
+    # If the desired industry is not found, select 'Online'
+    if not industry_found:
+        for option in business_industries_options:
+            if option.text == 'Professional':
+                option.click()
+                print("\nIndustry doesn't match, selected Professional.....")
+                break
+
+    business_phone = classic_inputs[1]
+    business_phone.click()
+    business_phone.clear()
+    time.sleep(0.5)
+    business_phone.send_keys(Keys.BACK_SPACE * 50)
+    business_phone.send_keys(sub_user.business_phone)
+    print("\nBusiness phone entered")
+
+
+    time.sleep(1)
+
+    # Continue to the next form
+    driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
+    print()
+    print("Clicked continue ")
+
+    time.sleep(3)
+
+
 
 def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_PASSWORD, EMAIL, EMAIL_PASSWORD):
     # Navigate to the login page
@@ -828,10 +979,10 @@ def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_
 
         # check the radio button for registered EIN
         radio_buttons = driver.find_elements(By.CSS_SELECTOR, "input.n-radio-input")
-        if len(radio_buttons) > 0 and sub_user.has_ein is True:
+        if sub_user.has_ein:
             radio_buttons[2].click()
             print()
-            print("Selected ein radio button")
+            print("Selected EIN radio button")
 
             # Continue to the next form
             _continue = WebDriverWait(driver, 180).until(
@@ -855,15 +1006,51 @@ def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_
             # business use case
             a2p_ein_business_use_case(driver, actions)
 
-            # campaign details
-            a2p_ein_campaign_details(driver, actions, sub_user)
+            # Campaign details
+            a2p_ein_campaign_details(driver, actions, sub_user, "use_case_des.txt", 'sample_msg_1.txt', 'sample_msg_2.txt')
 
             # user consent 
-            a2p_ein_user_content(driver, sub_user)
+            a2p_ein_user_content(driver, sub_user , "contact_consent.txt", "keywords.txt", "opt_in_msg.txt")
 
             time.sleep(10)
         else:
-            pass
+            radio_buttons[3].click()
+            print()
+            print("Selected NO-EIN radio button")
+
+            # Continue to the next form
+            _continue = WebDriverWait(driver, 180).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, "button.n-button.n-button--primary-type.n-button--medium-type"))
+            )
+            actions.move_to_element(_continue)
+            actions.click()
+            actions.perform()  
+            print()
+            print("clicked continue")
+
+
+            # Business details
+            a2p_no_ein_bus_details(driver, sub_user)
+
+            # Business address
+            a2p_no_ein_bus_address(driver, sub_user)
+
+            # Business contact info
+            a2p_ein_business_contact(driver, sub_user)
+
+            # Business use case
+            a2p_ein_business_use_case(driver, actions)
+
+            # business brand details
+            a2p_no_ein_brand_details(driver, sub_user)
+
+            # Campaign details
+            a2p_ein_campaign_details(driver, actions, sub_user, "noein_use_case_des.txt", 'noein_sample_msg_1.txt', 'noein_sample_msg_2.txt')
+
+            # user consent 
+            a2p_ein_user_content(driver, sub_user , "contact_consent.txt", "keywords.txt", "opt_in_msg.txt")
+
+            time.sleep(10)
 
     except Exception as e:
         print()
@@ -891,9 +1078,12 @@ def a2pregister_with_retries(sub_user, max_retries=1):
     driver = webdriver.Chrome(options=chrome_options)
     # Create ActionChains object
     actions = ActionChains(driver)
+    done = False
     for retry in range(max_retries):
         try:
             a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_PASSWORD, EMAIL, EMAIL_PASSWORD)
+            done = True
+            break
         except Exception as e:
             print()
             print(f"Operation failed with exception: {e}")
@@ -903,6 +1093,9 @@ def a2pregister_with_retries(sub_user, max_retries=1):
                 time.sleep(5)
             else:
                 raise Exception(f"Maximum retries reached")
+            
+    driver.quit()
+    return done
 
 
 def generate_dynamic_mapping(csv_columns, model_fields):

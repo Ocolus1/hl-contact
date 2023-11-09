@@ -95,15 +95,19 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
 
         if sub_user:
             try:
-                a2pregister_with_retries(sub_user)
-
-                A2PRegistration.objects.create(status="pending", user=sub_user)
+                stats = a2pregister_with_retries(sub_user)
                 
-                return Response({"message": "Phone Number purchased successfully"}, status=status.HTTP_201_CREATED)
+                if stats:
+
+                    A2PRegistration.objects.create(status="pending", user=sub_user)
+
+                    return Response({"message": "A2PRegistration completed successfully"}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"error": "Error completing A2PRegistration on GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
             except:
-                return Response({"error": "Error purchasing number from GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Error completing A2PRegistration on GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
         
-        return Response({"error": "Error purchasing number from GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Error completing A2PRegistration on GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
