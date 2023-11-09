@@ -862,6 +862,8 @@ def a2p_register(driver, actions, sub_user, SUB_ACCOUNT, USER_EMAIL, USER_EMAIL_
             a2p_ein_user_content(driver, sub_user)
 
             time.sleep(10)
+        else:
+            pass
 
     except Exception as e:
         print()

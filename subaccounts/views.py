@@ -61,7 +61,6 @@ class SubAccountViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-
 class PhoneNumberViewSet(viewsets.ModelViewSet):
     queryset = PurchasedPhoneNumber.objects.all()
     serializer_class = PhoneNumberSerializer
@@ -95,13 +94,14 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
         sub_user = SubAccount.objects.get(business_email=business_email)
 
         if sub_user:
-            phone = a2pregister_with_retries(sub_user)
+            try:
+                a2pregister_with_retries(sub_user)
 
-            if phone:
-                PurchasedPhoneNumber.objects.create(phone_number=phone, user=sub_user)
+                A2PRegistration.objects.create(status="pending", user=sub_user)
+                
                 return Response({"message": "Phone Number purchased successfully"}, status=status.HTTP_201_CREATED)
-            
-            return Response({"error": "Error purchasing number from GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response({"error": "Error purchasing number from GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
         
         return Response({"error": "Error purchasing number from GoHighLevel. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
