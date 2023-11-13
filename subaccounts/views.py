@@ -12,6 +12,17 @@ import requests
 from django.conf import settings
 from .utils import generate_dynamic_mapping, buy_phone_number_with_retries, a2pregister_with_retries
 
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
+
+
+class GoogleLogin(SocialLoginView): 
+    adapter_class = GoogleOAuth2Adapter
+    callback_url = settings.CALLBACK_URL
+    client_class = OAuth2Client
+
+
 
 class SubAccountViewSet(viewsets.ModelViewSet):
     queryset = SubAccount.objects.all()

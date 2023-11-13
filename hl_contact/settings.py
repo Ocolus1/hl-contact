@@ -21,6 +21,9 @@ EMAIL = env("EMAIL")
 EMAIL_PASSWORD = env("EMAIL_PASSWORD")
 USER_EMAIL = env("USER_EMAIL")
 USER_EMAIL_PASSWORD = env("USER_EMAIL_PASSWORD")
+CLIENT_ID = env("CLIENT_ID")
+CLIENT_SECRET = env("CLIENT_SECRET")
+CALLBACK_URL = env("CALLBACK_URL")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,7 +44,15 @@ INSTALLED_APPS = [
 
     'drf_yasg',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 
     'subaccounts',
 ]
@@ -69,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request'
             ],
         },
     },
@@ -136,3 +149,31 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://localhost:5173"
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
+SITE_ID = 1
+LOGIN_REDIRECT_URL="/"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "none"
+AUTH_USER_MODEL = 'subaccounts.CustomUser'
+
+
+REST_AUTH = {
+    'REGISTER_SERIALIZER': 'subaccounts.serializers.CustomRegisterSerializer',
+    'LOGIN_SERIALIZER': 'subaccounts.serializers.CustomLoginSerializer',
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic'
+        }
+    },
+}
