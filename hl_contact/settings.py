@@ -24,6 +24,7 @@ USER_EMAIL_PASSWORD = env("USER_EMAIL_PASSWORD")
 CLIENT_ID = env("CLIENT_ID")
 CLIENT_SECRET = env("CLIENT_SECRET")
 CALLBACK_URL = env("CALLBACK_URL")
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -174,6 +175,7 @@ AUTH_USER_MODEL = 'subaccounts.CustomUser'
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'subaccounts.serializers.CustomRegisterSerializer',
     'LOGIN_SERIALIZER': 'subaccounts.serializers.CustomLoginSerializer',
+    'USER_DETAILS_SERIALIZER': 'subaccounts.serializers.CustomUserSerializer',
 }
 
 SWAGGER_SETTINGS = {
