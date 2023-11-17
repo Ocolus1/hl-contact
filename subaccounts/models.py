@@ -22,8 +22,10 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
+
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
+    status = models.CharField(max_length=250, blank=True, null=True, default="User Info")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -32,6 +34,7 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
 
 class SubAccount(models.Model):
     appointment_cost = models.IntegerField()
@@ -59,6 +62,8 @@ class SubAccount(models.Model):
     contact_phone = models.CharField(max_length=20)
     gohighlevel_id = models.CharField(max_length=255, null=True, blank=True)
     gohighlevel_api_key = models.CharField(max_length=255, null=True, blank=True)
+    customer_id = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.business_name
@@ -67,10 +72,11 @@ class SubAccount(models.Model):
 class PurchasedPhoneNumber(models.Model):
     phone_number = models.CharField(max_length=15, unique=True)
     purchased_on = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(SubAccount, on_delete=models.CASCADE)
+    sub_account = models.ForeignKey(SubAccount, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.business_name} --> {self.phone_number}"
+        return f"{self.sub_account.business_name} --> {self.phone_number}"
     
 
 class A2PRegistration(models.Model):
@@ -86,12 +92,11 @@ class A2PRegistration(models.Model):
         default='pending'
     )
     last_updated = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(SubAccount, on_delete=models.CASCADE)
+    sub_account = models.ForeignKey(SubAccount, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.business_name} --> {self.get_status_display()}"
-
-
+        return f"{self.sub_account.business_name} --> {self.get_status_display()}"
 
 
 class Contact(models.Model):
@@ -111,6 +116,7 @@ class Contact(models.Model):
     source = models.CharField(max_length=100, null=True, blank=True)
     # ForeignKey to SubAccount
     sub_account = models.ForeignKey(SubAccount, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.email}"
