@@ -677,7 +677,7 @@ def a2p_ein_user_content(driver, sub_user , case1, case2, case3):
 
     time.sleep(5)
 
-    # # Continue to the next form
+    # # Submit to register
     # driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
     # print()
     # print("Clicked continue ")
@@ -1121,3 +1121,13 @@ def extract_area_code(phone_number):
         return area_code.group()
     else:
         return None
+
+
+def find_stripe_customer_id(data):
+    # Iterate through the list of custom values
+    for item in data["customValues"]:
+        # Check if the name matches 'Stripe Customer ID'
+        if item["name"] == "Stripe Customer ID":
+            # Return the ID of the matching object
+            return item["id"]
+    return None

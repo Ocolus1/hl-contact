@@ -1,7 +1,10 @@
 from rest_framework import serializers
-from .models import SubAccount, PurchasedPhoneNumber, A2PRegistration, Contact
+from .models import SubAccount, PurchasedPhoneNumber, A2PRegistration, Contact, CustomUser
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer
+
+
+
 
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -45,3 +48,9 @@ class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = '__all__'
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ("id", "email", "first_name", "last_name", "status")
