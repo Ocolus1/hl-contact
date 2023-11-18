@@ -110,7 +110,7 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def purchase_phone_number(self, request):
         # Retrieve the logged-in user's SubAccount
-        user = request.user
+        user = request.user.pk
         sub_user = SubAccount.objects.get(user=user)
 
         if sub_user:
@@ -119,8 +119,11 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
             )
 
             if phone:
-                PurchasedPhoneNumber.objects.create(phone_number=phone, user=sub_user)
-                user.status = "Phone Number Purchase"
+                PurchasedPhoneNumber.objects.create(
+                    phone_number=phone, sub_account=sub_user, user=request.user
+                )
+                user = request.user
+                user.status = "A2P Registration"
                 user.save()
                 return Response(
                     {"message": "Phone Number purchased successfully"},
@@ -157,8 +160,11 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
                 stats = a2pregister_with_retries(sub_user)
 
                 if stats:
-                    A2PRegistration.objects.create(status="pending", user=sub_user)
-                    user.status = "A2P Registration"
+                    A2PRegistration.objects.create(
+                        status="pending", sub_account=sub_user, user=request.user
+                    )
+                    user = request.user
+                    user.status = "Contact Upload"
                     user.save()
 
                     return Response(
@@ -205,171 +211,191 @@ class ContactViewSet(viewsets.ModelViewSet):
         user = request.user.pk
         sub_user = SubAccount.objects.get(user=user)
 
-        # Read CSV using pandas
-        df = pd.read_csv(csv_file)
+        try:
+            # Read CSV using pandas
+            df = pd.read_csv(csv_file)
 
-        # Cleaning logic
-        # Remove people with the main company’s domain in their email address
-        if "Primary Contact: website" in df.columns:
-            for domain in df["Primary Contact: website"].dropna():
-                domain = domain.replace("www.", "")  # removing 'www.' if it's there
-                mask = ~df["Primary Contact: Email"].str.endswith(domain)
-                df = df[mask]
+            # Cleaning logic
+            # Remove people with the main company’s domain in their email address
+            if "Primary Contact: website" in df.columns:
+                for domain in df["Primary Contact: website"].dropna():
+                    domain = domain.replace("www.", "")  # removing 'www.' if it's there
+                    mask = ~df["Primary Contact: Email"].str.endswith(domain)
+                    df = df[mask]
 
-        # Drop empty columns and rows
-        df.dropna(axis=1, how="all", inplace=True)
-        df.dropna(axis=0, how="all", inplace=True)
+            # Drop empty columns and rows
+            df.dropna(axis=1, how="all", inplace=True)
+            df.dropna(axis=0, how="all", inplace=True)
+            print("\nDropped any empty rows")
 
-        # Get the column names from the CSV
-        csv_columns = df.columns.tolist()
+            # Get the column names from the CSV
+            csv_columns = df.columns.tolist()
 
-        # Get the Django model field names
-        model_fields = [field.name for field in Contact._meta.fields]
+            # Get the Django model field names
+            model_fields = [field.name for field in Contact._meta.fields]
 
-        # Generate the dynamic mapping
-        CSV_TO_MODEL_MAPPING = generate_dynamic_mapping(csv_columns, model_fields)
+            # Generate the dynamic mapping
+            CSV_TO_MODEL_MAPPING = generate_dynamic_mapping(csv_columns, model_fields)
+            print("\nGenerate dynamic mapping")
 
-        # Determine the columns for names, emails, and phone based on the mapping
-        first_name_column = next(
-            (
-                csv_col
-                for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
-                if model_field == "first_name"
-            ),
-            None,
-        )
-        last_name_column = next(
-            (
-                csv_col
-                for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
-                if model_field == "last_name"
-            ),
-            None,
-        )
-        email_column = next(
-            (
-                csv_col
-                for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
-                if model_field == "email"
-            ),
-            None,
-        )
-        name_column = next(
-            (
-                csv_col
-                for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
-                if model_field == "name"
-            ),
-            None,
-        )
-        phone_column = next(
-            (
-                csv_col
-                for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
-                if model_field == "phone"
-            ),
-            None,
-        )
-
-        # Check if columns exist in the DataFrame and apply transformations
-        if first_name_column in df.columns:
-            df[first_name_column] = df[first_name_column].str.title()
-            df = df[~df[first_name_column].str.contains("test", case=False, na=False)]
-
-        if last_name_column in df.columns:
-            df[last_name_column] = df[last_name_column].str.title()
-            df = df[~df[last_name_column].str.contains("test", case=False, na=False)]
-
-        # If there's no separate first and last name, but there's a combined name column
-        if name_column in df.columns:
-            df[name_column] = df[name_column].str.title()
-            df = df[~df[name_column].str.contains("test", case=False, na=False)]
-
-        # Remove any email that has the word 'test' in it
-        if email_column in df.columns:
-            df = df[~df[email_column].str.contains("test", case=False, na=False)]
-
-        # Remove rows without both email and phone values
-        if email_column in df.columns and phone_column in df.columns:
-            df = df[df[email_column].notna() | df[phone_column].notna()]
-
-        # Convert DataFrame back to a list of dictionaries for processing
-        contacts_list = df.to_dict(orient="records")
-
-        contacts_to_save = []
-
-        for contact_data in contacts_list:
-            # Filter out unwanted columns based on our mapping
-            filtered_contact_data = {
-                CSV_TO_MODEL_MAPPING[key]: value
-                for key, value in contact_data.items()
-                if key in CSV_TO_MODEL_MAPPING
-            }
-            # Remove keys with nan values
-            filtered_contact_data = {
-                k: v.strip() if isinstance(v, str) else v
-                for k, v in filtered_contact_data.items()
-                if not isinstance(v, float) or not math.isnan(v)
-            }
-
-            # Now, create a Contact instance using the filtered data
-            contact = Contact(**filtered_contact_data, sub_account=sub_account)
-            contacts_to_save.append(contact)
-
-            # Processing tags for the contact
-            tags = (
-                contact_data.get("Tags").split(" ") if contact_data.get("Tags") else []
+            # Determine the columns for names, emails, and phone based on the mapping
+            first_name_column = next(
+                (
+                    csv_col
+                    for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
+                    if model_field == "first_name"
+                ),
+                None,
             )
-            for tag_name in tags:
-                tag = Tag(name=tag_name.strip(), contact=contact)
-                tag.save()
+            last_name_column = next(
+                (
+                    csv_col
+                    for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
+                    if model_field == "last_name"
+                ),
+                None,
+            )
+            email_column = next(
+                (
+                    csv_col
+                    for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
+                    if model_field == "email"
+                ),
+                None,
+            )
+            name_column = next(
+                (
+                    csv_col
+                    for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
+                    if model_field == "name"
+                ),
+                None,
+            )
+            phone_column = next(
+                (
+                    csv_col
+                    for csv_col, model_field in CSV_TO_MODEL_MAPPING.items()
+                    if model_field == "phone"
+                ),
+                None,
+            )
 
-            # Constructing payload for HL
-            hl_payload = {
-                "email": filtered_contact_data.get("email"),
-                "phone": filtered_contact_data.get("phone"),
-                "firstName": filtered_contact_data.get("first_name"),
-                "lastName": filtered_contact_data.get("last_name"),
-                "name": f"{filtered_contact_data.get('first_name', '')} {filtered_contact_data.get('last_name', '')}".strip(),
-                "dateOfBirth": filtered_contact_data.get("date_of_birth"),
-                "address1": filtered_contact_data.get("address1"),
-                "city": filtered_contact_data.get("city"),
-                "state": filtered_contact_data.get("state"),
-                "country": filtered_contact_data.get("country"),
-                "postalCode": filtered_contact_data.get("postal_code"),
-                "companyName": filtered_contact_data.get("company_name"),
-                "website": filtered_contact_data.get("website"),
-                "source": filtered_contact_data.get("source"),
-                # If tags are comma-separated in the CSV and stored in a 'tags' field
-                "tags": filtered_contact_data.get("tags").split(" ")
-                if filtered_contact_data.get("tags")
-                else [],
-            }
+            # Check if columns exist in the DataFrame and apply transformations
+            if first_name_column in df.columns:
+                df[first_name_column] = df[first_name_column].str.title()
+                df = df[
+                    ~df[first_name_column].str.contains("test", case=False, na=False)
+                ]
 
-            # Sending data to HL
-            url = "https://rest.gohighlevel.com/v1/contacts/"
-            headers = {"Authorization": f"Bearer {sub_account.gohighlevel_api_key}"}
-            response = requests.post(url, headers=headers, json=hl_payload)
-            if response.status_code != 200:
-                return Response(
-                    {
-                        "error": "Error sending data to GoHighLevel for contact: "
-                        + filtered_contact_data.get("first_name")
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+            if last_name_column in df.columns:
+                df[last_name_column] = df[last_name_column].str.title()
+                df = df[
+                    ~df[last_name_column].str.contains("test", case=False, na=False)
+                ]
+
+            # If there's no separate first and last name, but there's a combined name column
+            if name_column in df.columns:
+                df[name_column] = df[name_column].str.title()
+                df = df[~df[name_column].str.contains("test", case=False, na=False)]
+
+            # Remove any email that has the word 'test' in it
+            if email_column in df.columns:
+                df = df[~df[email_column].str.contains("test", case=False, na=False)]
+
+            # Remove rows without both email and phone values
+            if email_column in df.columns and phone_column in df.columns:
+                df = df[df[email_column].notna() | df[phone_column].notna()]
+
+            # Convert DataFrame back to a list of dictionaries for processing
+            contacts_list = df.to_dict(orient="records")
+
+            contacts_to_save = []
+
+            print("\nsending contacts to Highlevel")
+            for contact_data in contacts_list:
+                # Filter out unwanted columns based on our mapping
+                filtered_contact_data = {
+                    CSV_TO_MODEL_MAPPING[key]: value
+                    for key, value in contact_data.items()
+                    if key in CSV_TO_MODEL_MAPPING
+                }
+                # Remove keys with nan values
+                filtered_contact_data = {
+                    k: v.strip() if isinstance(v, str) else v
+                    for k, v in filtered_contact_data.items()
+                    if not isinstance(v, float) or not math.isnan(v)
+                }
+
+                # Now, create a Contact instance using the filtered data
+                contact = Contact(
+                    **filtered_contact_data, sub_account=sub_user, user=request.user
                 )
+                contacts_to_save.append(contact)
 
-        # Save all contacts in one database hit
-        with transaction.atomic():
-            Contact.objects.bulk_create(contacts_to_save)
-            # Tag.objects.bulk_create(tags_to_save)
-        user.status = "Contact Upload"
-        user.save()
+                # Processing tags for the contact
+                tags = (
+                    contact_data.get("Tags").split(" ")
+                    if contact_data.get("Tags")
+                    else []
+                )
+                for tag_name in tags:
+                    tag = Tag(name=tag_name.strip(), contact=contact)
+                    tag.save()
 
-        return Response(
-            {"message": "Contacts processed and sent to GoHighLevel successfully"},
-            status=status.HTTP_201_CREATED,
-        )
+                # Constructing payload for HL
+                hl_payload = {
+                    "email": filtered_contact_data.get("email"),
+                    "phone": filtered_contact_data.get("phone"),
+                    "firstName": filtered_contact_data.get("first_name"),
+                    "lastName": filtered_contact_data.get("last_name"),
+                    "name": f"{filtered_contact_data.get('first_name', '')} {filtered_contact_data.get('last_name', '')}".strip(),
+                    "dateOfBirth": filtered_contact_data.get("date_of_birth"),
+                    "address1": filtered_contact_data.get("address1"),
+                    "city": filtered_contact_data.get("city"),
+                    "state": filtered_contact_data.get("state"),
+                    "country": filtered_contact_data.get("country"),
+                    "postalCode": filtered_contact_data.get("postal_code"),
+                    "companyName": filtered_contact_data.get("company_name"),
+                    "website": filtered_contact_data.get("website"),
+                    "source": filtered_contact_data.get("source"),
+                    # If tags are comma-separated in the CSV and stored in a 'tags' field
+                    "tags": filtered_contact_data.get("tags").split(" ")
+                    if filtered_contact_data.get("tags")
+                    else [],
+                }
+
+                # Sending data to HL
+                url = "https://rest.gohighlevel.com/v1/contacts/"
+                headers = {"Authorization": f"Bearer {sub_user.gohighlevel_api_key}"}
+                response = requests.post(url, headers=headers, json=hl_payload)
+                if response.status_code != 200:
+                    return Response(
+                        {
+                            "error": "Error sending data to GoHighLevel for contact: "
+                            + filtered_contact_data.get("first_name")
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # Save all contacts in one database hit
+            with transaction.atomic():
+                Contact.objects.bulk_create(contacts_to_save)
+                print("\nSaving contacts to database")
+                # Tag.objects.bulk_create(tags_to_save)
+            user = request.user
+            user.status = "Schedule Calendar"
+            user.save()
+            
+            print("\ndone....")
+
+            return Response(
+                {"message": "Contacts processed and sent to GoHighLevel successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class StripeSetupIntentAPIView(APIView):
@@ -394,7 +420,7 @@ class LinkPaymentMethodToCustomer(APIView):
 
     def post(self, request, *args, **kwargs):
         stripe.api_key = settings.STRIPE_SECRET_KEY
- 
+
         # Retrieve the Setup Intent ID from the request
         setup_intent_id = request.data.get("setup_intent_id")
 

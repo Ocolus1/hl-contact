@@ -1,9 +1,6 @@
 Website forms 
 End-users can provide their consent through website forms. Involves a section on the website where the user enters their phone number and/or clicks on a checkbox to confirm their agreement to receive messages. Example: "By visiting {0}, end-users can fill out a form to opt-in. This involves providing their phone number and checking a box to confirm their agreement to receive text messages from {1}." 
 
-Chat widget 
-Appearing as a pop-up on the bottom right corner of our website, this widget can request the visitor's phone number and permission. The consent language might look something like this: Example: "In our website's chat widget, end-users may opt to receive text messages by providing their phone number and then checking a box or typing 'Yes' to signify their agreement to receive text messages from {1}.
-
 Appointment Booking 
 When an end-user books an appointment, they provide their contact details, including their phone number. 
 Example: "While booking an appointment, users can opt-in to receive sms updates. This involves entering their phone number and checking a box to confirm they wish to receive appointment reminders, updates, and promotional messages from {1}."
