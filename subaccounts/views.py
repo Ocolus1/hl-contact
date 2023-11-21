@@ -6,12 +6,22 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import SubAccount, PurchasedPhoneNumber, A2PRegistration, Contact, Tag
+from .models import (
+    SubAccount,
+    PurchasedPhoneNumber,
+    A2PRegistration,
+    Contact,
+    Tag,
+    CalendarDetails,
+    InspectionDetails,
+)
 from .serializers import (
     SubAccountSerializer,
     PhoneNumberSerializer,
     ContactSerializer,
     A2PRegistrationSerializer,
+    CalendarDetailsSerializer,
+    InspectionDetailsSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
 import requests
@@ -83,7 +93,7 @@ class SubAccountViewSet(viewsets.ModelViewSet):
                 sub_account.gohighlevel_api_key = response_data.get("apiKey")
                 sub_account.save()  # Update the SubAccount instance with the new data
                 user = request.user
-                user.status = "Stripe Payment Details"
+                user.status = "Calendar Details"
                 user.save()
                 # Stripe Payment Details
                 return Response(
@@ -97,6 +107,40 @@ class SubAccountViewSet(viewsets.ModelViewSet):
                 )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CalendarDetailsViewSet(viewsets.ModelViewSet):
+    queryset = CalendarDetails.objects.all()
+    serializer_class = CalendarDetailsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # Get the logged-in user and their associated SubAccount
+        user = request.user
+        sub_user = SubAccount.objects.get(user=user.pk)
+
+        # Deserialize the incoming data
+        data = request.data
+        data["user"] = user.pk
+        data["sub_account"] = sub_user.pk
+        serializer = self.get_serializer(data=data)
+
+        # Check if the deserialized data is valid
+        if serializer.is_valid():
+            # Save the CalendarDetails instance with user and sub_user fields set
+            serializer.save()
+
+            # Optionally, update the user status
+            user.status = "Stripe Payment Details"
+            user.save()
+
+            return Response(
+                {"message": "Calendar details created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            # Return an error response if the data is not valid
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PhoneNumberViewSet(viewsets.ModelViewSet):
@@ -382,10 +426,11 @@ class ContactViewSet(viewsets.ModelViewSet):
                 Contact.objects.bulk_create(contacts_to_save)
                 print("\nSaving contacts to database")
                 # Tag.objects.bulk_create(tags_to_save)
+
             user = request.user
             user.status = "Schedule Calendar"
             user.save()
-            
+
             print("\ndone....")
 
             return Response(
@@ -506,3 +551,37 @@ class LinkPaymentMethodToCustomer(APIView):
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class InspectionDetailsViewSet(viewsets.ModelViewSet):
+    queryset = InspectionDetails.objects.all()
+    serializer_class = InspectionDetailsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # Get the logged-in user and their associated SubAccount
+        user = request.user
+        sub_user = SubAccount.objects.get(user=user.pk)
+
+        # Deserialize the incoming data
+        data = request.data
+        data["user"] = user.pk
+        data["sub_account"] = sub_user.pk
+        serializer = self.get_serializer(data=data)
+
+        # Check if the deserialized data is valid
+        if serializer.is_valid():
+            # Save the CalendarDetails instance with user and sub_user fields set
+            serializer.save()
+
+            # Optionally, update the user status
+            user.status = "Completed"
+            user.save()
+
+            return Response(
+                {"message": "Inspection details added successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            # Return an error response if the data is not valid
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
