@@ -5,3 +5,9 @@ sample.csv
 Straightline.D_All_Dead_11_21_22_7_11_52.csv
 __pycache__
 .env
+message.txt
+.python-version
+.dockerignore
+docker-compose.yml
+creds.json
+Dockerfile
