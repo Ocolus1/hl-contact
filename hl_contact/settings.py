@@ -30,6 +30,7 @@ DB_USER = env("DB_USER")
 DB_PASSWORD = env("DB_PASSWORD")
 DB_HOST = env("DB_HOST")
 DB_PORT = env("DB_PORT")
+DEBUG = env("DEBUG")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -149,11 +150,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_root/')
+STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static_root/")
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -202,3 +203,8 @@ SWAGGER_SETTINGS = {
     },
     "USE_SESSION_AUTH": False,  # Add this to disable session authentication
 }
+
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = ["https://hl-contact-qh6kcxvdja-uc.a.run.app"]
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
