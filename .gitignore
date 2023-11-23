@@ -10,4 +10,3 @@ message.txt
 .dockerignore
 docker-compose.yml
 creds.json
-Dockerfile

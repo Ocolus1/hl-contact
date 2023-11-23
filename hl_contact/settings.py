@@ -32,10 +32,8 @@ DB_HOST = env("DB_HOST")
 DB_PORT = env("DB_PORT")
 DEBUG = env("DEBUG")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["hl-contact-qh6kcxvdja-uc.a.run.app", "localhost", "127.0.0.1"]
 
 # Application definition
 
