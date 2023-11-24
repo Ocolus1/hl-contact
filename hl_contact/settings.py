@@ -62,7 +62,6 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -148,8 +147,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+# Google Cloud Storage for Static File Serve
+GS_PROJECT_ID = env("GS_PROJECT_ID")
+GS_BUCKET_NAME = env("GS_BUCKET_NAME")
+GS_AUTO_CREATE_BUCKET = True
+GS_DEFAULT_ACL = "publicRead"
+
+STATIC_URL = "https://storage.googleapis.com/{}/".format(GS_BUCKET_NAME)
+
+# STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static_root/")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -200,6 +208,15 @@ SWAGGER_SETTINGS = {
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
     },
     "USE_SESSION_AUTH": False,  # Add this to disable session authentication
+}
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
 }
 
 if not DEBUG:
