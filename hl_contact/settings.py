@@ -33,7 +33,7 @@ DB_PORT = env("DB_PORT")
 DEBUG = env("DEBUG")
 
 
-ALLOWED_HOSTS = ["hl-contact-qh6kcxvdja-uc.a.run.app", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
