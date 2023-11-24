@@ -1,4 +1,4 @@
-# Dockerfile
+# Docker file
 FROM python:3.10.4-slim-bullseye
 
 # Set environment variables
