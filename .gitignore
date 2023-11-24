@@ -8,7 +8,6 @@ __pycache__
 .env
 message.txt
 .python-version
-.dockerignore
 docker-compose.yml
 creds.json
 db.sqlite3
