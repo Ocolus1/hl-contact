@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the Django project code into the container
 COPY . .
 
-# Expose the ports (Cloud Run uses the PORT environment variable too)
+# Expose the ports (Cloud Run uses the PORT environment variable)
 ENV PORT 8080
 EXPOSE 8080
 
