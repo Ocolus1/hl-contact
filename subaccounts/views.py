@@ -2,7 +2,7 @@ from django.db import transaction
 import math
 import pandas as pd
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +14,7 @@ from .models import (
     Tag,
     CalendarDetails,
     InspectionDetails,
+    CustomUser,
 )
 from .serializers import (
     SubAccountSerializer,
@@ -22,6 +23,7 @@ from .serializers import (
     A2PRegistrationSerializer,
     CalendarDetailsSerializer,
     InspectionDetailsSerializer,
+    CustomUserSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
 import requests
@@ -46,6 +48,12 @@ class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     callback_url = settings.CALLBACK_URL
     client_class = OAuth2Client
+
+
+class UserViewset(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.IsAdminUser]
 
 
 class SubAccountViewSet(viewsets.ModelViewSet):
