@@ -43,6 +43,16 @@ from rest_framework.views import APIView
 import stripe
 import json
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.pagination import PageNumberPagination
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10  # Default page size
+    page_size_query_param = "page_size"  # Parameter for clients to customize page size
+    max_page_size = 100  # Maximum limit for page size
+
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
@@ -54,12 +64,49 @@ class UserViewset(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAdminUser]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "email",
+        "first_name",
+        "last_name",
+    ]
+    filterset_fields = ["id", "email", "first_name", "last_name"]
+    search_fields = ["first_name", "last_name", "email"]
+    ordering = ["id"]
 
 
 class SubAccountViewSet(viewsets.ModelViewSet):
     queryset = SubAccount.objects.all()
     serializer_class = SubAccountSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "business_name",
+        "business_email",
+        "business_phone",
+        "website",
+    ]
+    filterset_fields = [
+        "id",
+        "business_name",
+        "business_email",
+        "business_phone",
+        "website",
+        "has_ein",
+    ]
+    search_fields = [
+        "id",
+        "business_name",
+        "business_email",
+        "business_phone",
+        "website",
+        "has_ein",
+    ]
+    ordering = ["id"]
 
     @swagger_auto_schema(
         operation_description="Create a new SubAccount and send data to GoHighLevel."
@@ -122,6 +169,31 @@ class CalendarDetailsViewSet(viewsets.ModelViewSet):
     serializer_class = CalendarDetailsSerializer
     permission_classes = [IsAuthenticated]
 
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "bookingMethod",
+        "email",
+        "timeBuffer",
+        "inspectionDuration",
+    ]
+    filterset_fields = [
+        "id",
+        "bookingMethod",
+        "email",
+        "timeBuffer",
+        "inspectionDuration",
+    ]
+    search_fields = [
+        "id",
+        "bookingMethod",
+        "email",
+        "timeBuffer",
+        "inspectionDuration",
+    ]
+    ordering = ["id"]
+
     def create(self, request, *args, **kwargs):
         # Get the logged-in user and their associated SubAccount
         user = request.user
@@ -155,6 +227,25 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
     queryset = PurchasedPhoneNumber.objects.all()
     serializer_class = PhoneNumberSerializer
     permission_classes = [IsAuthenticated]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "phone_number",
+        "purchased_on",
+    ]
+    filterset_fields = [
+        "id",
+        "phone_number",
+        "purchased_on",
+    ]
+    search_fields = [
+        "id",
+        "phone_number",
+        "purchased_on",
+    ]
+    ordering = ["id"]
 
     @swagger_auto_schema(
         operation_description="Buy a new Phone NUmber from GoHighLevel."
@@ -199,6 +290,25 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     queryset = A2PRegistration.objects.all()
     serializer_class = A2PRegistrationSerializer
     permission_classes = [IsAuthenticated]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "status",
+        "last_updated",
+    ]
+    filterset_fields = [
+        "id",
+        "status",
+        "last_updated",
+    ]
+    search_fields = [
+        "id",
+        "status",
+        "last_updated",
+    ]
+    ordering = ["id"]
 
     @swagger_auto_schema(operation_description="A2PRegistration on  GoHighLevel.")
     @action(detail=False, methods=["POST"])
@@ -251,6 +361,43 @@ class ContactViewSet(viewsets.ModelViewSet):
     serializer_class = ContactSerializer
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "email",
+        "phone",
+        "first_name",
+        "name",
+        "state",
+        "city",
+        "company_name",
+        "country",
+    ]
+    filterset_fields = [
+        "id",
+        "email",
+        "phone",
+        "first_name",
+        "name",
+        "state",
+        "city",
+        "company_name",
+        "country",
+    ]
+    search_fields = [
+        "id",
+        "email",
+        "phone",
+        "first_name",
+        "name",
+        "state",
+        "city",
+        "company_name",
+        "country",
+    ]
+    ordering = ["id"]
 
     @swagger_auto_schema(
         operation_description="Upload CSV, clean data, and send to GoHighLevel."
@@ -565,6 +712,40 @@ class InspectionDetailsViewSet(viewsets.ModelViewSet):
     queryset = InspectionDetails.objects.all()
     serializer_class = InspectionDetailsSerializer
     permission_classes = [IsAuthenticated]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = [
+        "id",
+        "moreInspections",
+        "jobCapacity",
+        "messageSender",
+        "paymentMethod",
+        "completionTime",
+        "priceIncreaseLower",
+        "priceIncreaseUpper",
+    ]
+    filterset_fields = [
+        "id",
+        "moreInspections",
+        "jobCapacity",
+        "messageSender",
+        "paymentMethod",
+        "completionTime",
+        "priceIncreaseLower",
+        "priceIncreaseUpper",
+    ]
+    search_fields = [
+        "id",
+        "moreInspections",
+        "jobCapacity",
+        "messageSender",
+        "paymentMethod",
+        "completionTime",
+        "priceIncreaseLower",
+        "priceIncreaseUpper",
+    ]
+    ordering = ["id"]
 
     def create(self, request, *args, **kwargs):
         # Get the logged-in user and their associated SubAccount

@@ -58,7 +58,14 @@ class ContactSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ("id", "email", "first_name", "last_name", "status")
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "status",
+            "is_superuser",
+        )
 
 
 class CalendarDetailsSerializer(serializers.ModelSerializer):
