@@ -154,9 +154,9 @@ GS_BUCKET_NAME = env("GS_BUCKET_NAME")
 GS_AUTO_CREATE_BUCKET = True
 GS_DEFAULT_ACL = "publicRead"
 
-STATIC_URL = "https://storage.googleapis.com/{}/".format(GS_BUCKET_NAME)
+# STATIC_URL = "https://storage.googleapis.com/{}/".format(GS_BUCKET_NAME)
 
-# STATIC_URL = "static/"
+STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static_root/")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
@@ -212,14 +212,14 @@ SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,  # Add this to disable session authentication
 }
 
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-    },
-}
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+#     },
+# }
 
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS = ["https://hl-contact-qh6kcxvdja-uc.a.run.app"]
