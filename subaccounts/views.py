@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import (
     SubAccount,
     PurchasedPhoneNumber,
@@ -289,7 +289,7 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
 class A2PRegistrationViewSet(viewsets.ModelViewSet):
     queryset = A2PRegistration.objects.all()
     serializer_class = A2PRegistrationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     pagination_class = StandardResultsSetPagination
