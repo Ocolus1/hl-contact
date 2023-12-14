@@ -355,6 +355,32 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    @swagger_auto_schema(
+        operation_description="Update A2PRegistration in the database."
+    )
+    @action(detail=False, methods=["POST"])
+    def A2PRegistrationUpdate(self, request):
+        locationId = request.data["locationId"]
+        sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
+
+        if sub_user:
+            try:
+                a2p = A2PRegistration.objects.get(sub_user=sub_user)
+                a2p.status = "approved"
+                a2p.save()
+            except:
+                return Response(
+                    {
+                        "error": "Error completing A2PRegistration update in the database"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        return Response(
+            {"error": "Error completing A2PRegistration update in the database"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
 
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()

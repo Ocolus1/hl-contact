@@ -51,6 +51,46 @@ def select_checkboxes(driver):
             print("\nCheckbox is already checked. Skipping.")
 
 
+def scroll_and_select(driver, container_element, desired_option_locator, timeout=3):
+    """
+    Scroll through a container element until a desired option becomes visible and then select it.
+
+    Parameters:
+    - driver: Selenium WebDriver instance
+    - container_element: The WebElement representing the container with a scrollbar
+    - desired_option_locator: Locator for the desired option within the container
+    - timeout: Maximum time to wait for the presence of the desired option (default is 3 seconds)
+    """
+    item_visible = False
+    prev_scroll_position = -1
+
+    while not item_visible:
+        current_scroll_position = driver.execute_script(
+            "return arguments[0].scrollTop;", container_element
+        )
+        driver.execute_script(
+            "arguments[0].scrollTop += arguments[0].offsetHeight;", container_element
+        )
+
+        if current_scroll_position == prev_scroll_position:
+            break
+
+        prev_scroll_position = current_scroll_position
+
+        try:
+            item = WebDriverWait(driver, timeout).until(
+                EC.presence_of_element_located((By.XPATH, desired_option_locator))
+            )
+            item_visible = True
+        except:
+            pass  # Continue scrolling if the item is not yet visible
+
+    if item_visible:
+        return item
+    else:
+        return None
+
+
 def otp_verification(driver, USER_EMAIL, USER_EMAIL_PASSWORD):
     # Connect to the mail server
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
@@ -451,61 +491,35 @@ def a2p_ein_business_reg(driver, actions, sub_user):
     business_industries_element.click()
     time.sleep(2)
 
-    scrollable_div = driver.find_elements(By.CSS_SELECTOR, "div.n-scrollbar")[0]
-
-    # Set the initial scroll position and the amount to scroll each time
-    scroll_increment = 50  # The amount of pixels to scroll each time
-    scroll_position = 0  # Initial scroll position
-
-    # Get the current scrollHeight of the content
-    scroll_height = driver.execute_script(
-        "return arguments[0].scrollHeight", scrollable_div
-    )
-    # Keep scrolling in increments until the bottom is reached
-    while scroll_position < scroll_height:
-        # Scroll down in the div
-        driver.execute_script(
-            "arguments[0].scrollTop = arguments[1]", scrollable_div, scroll_position
-        )
-
-        # Wait a bit for potentially lazy-loaded content to load
-        time.sleep(0.1)
-
-        # Update the scroll position and scrollHeight
-        scroll_position += scroll_increment
-        new_scroll_height = driver.execute_script(
-            "return arguments[0].scrollHeight", scrollable_div
-        )
-
-        # Check if the scrollHeight has changed due to new content being loaded and update if so
-        if new_scroll_height > scroll_height:
-            scroll_height = new_scroll_height
-        else:
-            # If no new content, break the loop as we have likely reached the bottom
-            break
-        print("\n", scroll_height, scroll_position, new_scroll_height)
-
     # Get all the loaded options
-    business_industries_options = driver.find_elements(
-        By.CSS_SELECTOR, "div.n-base-select-option__content"
+    business_industries_list = driver.find_elements(
+            By.CSS_SELECTOR, "div.n-virtual-list.v-vl"
+        )[2]
+
+    actions.move_to_element(business_industries_list)
+
+    desired_option_locator = f"//div[contains(@class, 'n-base-select-option__content') and contains(text(), '{sub_user.industry}')]"
+
+    selected_option = scroll_and_select(
+        driver, business_industries_list, desired_option_locator
     )
-
-    # Search for the desired industry and click it if found
-    industry_found = False
-    for option in business_industries_options:
-        if option.text == sub_user.industry:
-            option.click()
-            print(f"\nEntered business Engineering: {option.text}")
-            industry_found = True
-            break
-
-    # If the desired industry is not found, select 'Online'
-    if not industry_found:
-        for option in business_industries_options:
-            if option.text == "Engineering":
-                option.click()
-                print("\nIndustry doesn't match, selected Engineering.....")
-                break
+    if selected_option:
+        actions = ActionChains(driver)
+        actions.move_to_element(selected_option)
+        actions.click()
+        actions.perform()
+        print(f"\nEntered business industry: {selected_option.text}")
+    else:
+        desired_option_locator = f"//div[contains(@class, 'n-base-select-option__content') and contains(text(), 'Engineering')]"
+        selected_option = scroll_and_select(
+            driver, business_industries_list, desired_option_locator
+        )
+        if selected_option:
+            actions = ActionChains(driver)
+            actions.move_to_element(selected_option)
+            actions.click()
+            actions.perform()
+            print("\nIndustry doesn't match, selected Engineering.....")
 
     # Business Email
     business_email_input = classic_inputs[2]
