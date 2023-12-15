@@ -372,7 +372,8 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
 
         if sub_user:
             try:
-                a2p = A2PRegistration.objects.get(sub_user=sub_user.pk)
+                print(sub_user)
+                a2p = A2PRegistration.objects.get(sub_user=sub_user.id)
                 a2p.status = "approved"
                 a2p.save()
                 print("worked")
@@ -384,7 +385,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+
         print("error didn't work")
         return Response(
             {"error": "Error completing A2PRegistration update in the database"},
