@@ -326,7 +326,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
                 if stats:
                     a2p, created = A2PRegistration.objects.get_or_create(
                         sub_account=sub_user,
-                        defaults={'status': 'pending', 'user': request.user}
+                        defaults={"status": "pending", "user": request.user},
                     )
                     user = request.user
                     user.status = "Contact Upload"
@@ -364,6 +364,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def A2PRegistrationUpdate(self, request):
         locationId = request.data["locationId"]
+        
         try:
             sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
         except ObjectDoesNotExist:
@@ -374,21 +375,21 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
 
         if sub_user:
             try:
-                print(sub_user)
                 a2p = A2PRegistration.objects.get(sub_account=sub_user)
-                print(a2p)
                 a2p.status = "approved"
                 a2p.save()
-                print("working")
+                return Response(
+                    {"message": "A2PRegistration updated successfully"},
+                    status=status.HTTP_200_OK,
+                )
             except:
-                print("didn't work")
                 return Response(
                     {
                         "error": "Error completing A2PRegistration update in the database"
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        print("didn't work sonme")
+            
         return Response(
             {"error": "Error completing A2PRegistration update in the database"},
             status=status.HTTP_400_BAD_REQUEST,
