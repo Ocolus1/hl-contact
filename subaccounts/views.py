@@ -324,8 +324,9 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
                 stats = a2pregister_with_retries(sub_user)
 
                 if stats:
-                    A2PRegistration.objects.create(
-                        status="pending", sub_account=sub_user, user=request.user
+                    a2p, created = A2PRegistration.objects.get_or_create(
+                        sub_account=sub_user,
+                        defaults={'status': 'pending', 'user': request.user}
                     )
                     user = request.user
                     user.status = "Contact Upload"
