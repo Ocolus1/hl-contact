@@ -42,6 +42,7 @@ from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework.views import APIView
 import stripe
 import json
+from django.core.exceptions import ObjectDoesNotExist
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -361,7 +362,15 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def A2PRegistrationUpdate(self, request):
         locationId = request.data["locationId"]
-        sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
+        print("They are")
+        print(locationId)
+        try:
+            sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": "SubAccount matching query does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if sub_user:
             try:
