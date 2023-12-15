@@ -362,8 +362,6 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def A2PRegistrationUpdate(self, request):
         locationId = request.data["locationId"]
-        print("They are")
-        print(locationId)
         try:
             sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
         except ObjectDoesNotExist:
