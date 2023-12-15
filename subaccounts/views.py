@@ -372,7 +372,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
 
         if sub_user:
             try:
-                a2p = A2PRegistration.objects.get(sub_user=sub_user)
+                a2p = A2PRegistration.objects.get(sub_user=sub_user.pk)
                 a2p.status = "approved"
                 a2p.save()
                 print("worked")
