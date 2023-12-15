@@ -198,7 +198,7 @@ class CalendarDetailsViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Get the logged-in user and their associated SubAccount
         user = request.user
-        sub_user = SubAccount.objects.get(user=user.pk)
+        sub_user = SubAccount.objects.filter(user=user.pk).order_by("-id").first()
 
         # Deserialize the incoming data
         data = request.data
@@ -255,7 +255,8 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
     def purchase_phone_number(self, request):
         # Retrieve the logged-in user's SubAccount
         user = request.user.pk
-        sub_user = SubAccount.objects.get(user=user)
+        # sub_user = SubAccount.objects.get(user=user)
+        sub_user = SubAccount.objects.filter(user=user).order_by("-id").first()
 
         if sub_user:
             phone = buy_phone_number_with_retries(
@@ -316,7 +317,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     def A2PRegistration(self, request):
         # Retrieve the logged-in user's SubAccount
         user = request.user.pk
-        sub_user = SubAccount.objects.get(user=user)
+        sub_user = SubAccount.objects.filter(user=user).order_by("-id").first()
 
         if sub_user:
             try:
@@ -372,13 +373,10 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
 
         if sub_user:
             try:
-                print(sub_user)
-                a2p = A2PRegistration.objects.get(sub_user=sub_user.id)
+                a2p = A2PRegistration.objects.get(sub_account=sub_user)
                 a2p.status = "approved"
                 a2p.save()
-                print("worked")
             except:
-                print("didn't worked")
                 return Response(
                     {
                         "error": "Error completing A2PRegistration update in the database"
@@ -386,7 +384,6 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        print("error didn't work")
         return Response(
             {"error": "Error completing A2PRegistration update in the database"},
             status=status.HTTP_400_BAD_REQUEST,
@@ -445,7 +442,7 @@ class ContactViewSet(viewsets.ModelViewSet):
 
         # Retrieve the logged-in user's SubAccount
         user = request.user.pk
-        sub_user = SubAccount.objects.get(user=user)
+        sub_user = SubAccount.objects.filter(user=user).order_by("-id").first()
 
         try:
             # Read CSV using pandas
@@ -787,7 +784,7 @@ class InspectionDetailsViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Get the logged-in user and their associated SubAccount
         user = request.user
-        sub_user = SubAccount.objects.get(user=user.pk)
+        sub_user = SubAccount.objects.filter(user=user.pk).order_by("-id").first()
 
         # Deserialize the incoming data
         data = request.data
