@@ -115,6 +115,23 @@ class SubAccountViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def create_subaccount(self, request):
         data = request.data
+        business_email = data.get("business_email")
+        legal_business_name = data.get("legal_business_name")
+        business_name = data.get("business_name")
+
+        # Check if a SubAccount with the same email and names exists
+        existing_account = SubAccount.objects.filter(
+            business_email=business_email,
+            legal_business_name=legal_business_name,
+            business_name=business_name,
+        ).first()
+
+        if existing_account:
+            return Response(
+                {"error": "Subaccount already exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         data["user"] = request.user.pk
         serializer = self.get_serializer(data=data)
 
@@ -198,7 +215,7 @@ class CalendarDetailsViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Get the logged-in user and their associated SubAccount
         user = request.user
-        sub_user = SubAccount.objects.filter(user=user.pk).order_by("-id").first()
+        sub_user = SubAccount.objects.get(user=user.pk)
 
         # Deserialize the incoming data
         data = request.data
@@ -255,8 +272,7 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
     def purchase_phone_number(self, request):
         # Retrieve the logged-in user's SubAccount
         user = request.user.pk
-        # sub_user = SubAccount.objects.get(user=user)
-        sub_user = SubAccount.objects.filter(user=user).order_by("-id").first()
+        sub_user = SubAccount.objects.get(user=user)
 
         if sub_user:
             phone = buy_phone_number_with_retries(
@@ -264,8 +280,9 @@ class PhoneNumberViewSet(viewsets.ModelViewSet):
             )
 
             if phone:
-                PurchasedPhoneNumber.objects.create(
-                    phone_number=phone, sub_account=sub_user, user=request.user
+                PurchasedPhoneNumber.objects.get_or_create(
+                    phone_number=phone,
+                    defaults={"sub_account": sub_user, "user": request.user},
                 )
                 user = request.user
                 user.status = "A2P Registration"
@@ -317,7 +334,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     def A2PRegistration(self, request):
         # Retrieve the logged-in user's SubAccount
         user = request.user.pk
-        sub_user = SubAccount.objects.filter(user=user).order_by("-id").first()
+        sub_user = SubAccount.objects.get(user=user)
 
         if sub_user:
             try:
@@ -364,7 +381,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"])
     def A2PRegistrationUpdate(self, request):
         locationId = request.data["locationId"]
-        
+
         try:
             sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
         except ObjectDoesNotExist:
@@ -389,7 +406,7 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+
         return Response(
             {"error": "Error completing A2PRegistration update in the database"},
             status=status.HTTP_400_BAD_REQUEST,
@@ -448,7 +465,7 @@ class ContactViewSet(viewsets.ModelViewSet):
 
         # Retrieve the logged-in user's SubAccount
         user = request.user.pk
-        sub_user = SubAccount.objects.filter(user=user).order_by("-id").first()
+        sub_user = SubAccount.objects.get(user=user)
 
         try:
             # Read CSV using pandas
@@ -790,7 +807,7 @@ class InspectionDetailsViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Get the logged-in user and their associated SubAccount
         user = request.user
-        sub_user = SubAccount.objects.filter(user=user.pk).order_by("-id").first()
+        sub_user = SubAccount.objects.get(user=user.pk)
 
         # Deserialize the incoming data
         data = request.data
