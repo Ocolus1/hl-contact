@@ -223,12 +223,18 @@ class CalendarDetailsViewSet(viewsets.ModelViewSet):
         data["sub_account"] = sub_user.pk
         serializer = self.get_serializer(data=data)
 
-        # Check if the deserialized data is valid
-        if serializer.is_valid():
-            # Save the CalendarDetails instance with user and sub_user fields set
-            serializer.save()
+        # Attempt to get an existing instance based on certain criteria
+        instance, created = CalendarDetails.objects.get_or_create(
+            defaults={"sub_account": sub_user, "user": request.user},
+            **{
+                key: value
+                for key, value in data.items()
+                if key not in ["sub_account", "user"]
+            },
+        )
 
-            # Optionally, update the user status
+        # Optionally, update the user status
+        if created:
             user.status = "Stripe Payment Details"
             user.save()
 
@@ -236,6 +242,12 @@ class CalendarDetailsViewSet(viewsets.ModelViewSet):
                 {"message": "Calendar details created successfully"},
                 status=status.HTTP_201_CREATED,
             )
+
+        # Check if the deserialized data is valid
+        if serializer.is_valid() and instance:
+            # Serialize the instance for the response
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             # Return an error response if the data is not valid
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -815,12 +827,18 @@ class InspectionDetailsViewSet(viewsets.ModelViewSet):
         data["sub_account"] = sub_user.pk
         serializer = self.get_serializer(data=data)
 
-        # Check if the deserialized data is valid
-        if serializer.is_valid():
-            # Save the CalendarDetails instance with user and sub_user fields set
-            serializer.save()
+        # Attempt to get an existing instance based on certain criteria
+        instance, created = InspectionDetails.objects.get_or_create(
+            defaults={"sub_account": sub_user, "user": request.user},
+            **{
+                key: value
+                for key, value in data.items()
+                if key not in ["sub_account", "user"]
+            },
+        )
 
-            # Optionally, update the user status
+        # Optionally, update the user status
+        if created:
             user.status = "Completed"
             user.save()
 
@@ -828,6 +846,12 @@ class InspectionDetailsViewSet(viewsets.ModelViewSet):
                 {"message": "Inspection details added successfully"},
                 status=status.HTTP_201_CREATED,
             )
+        
+        # Check if the deserialized data is valid
+        if serializer.is_valid() and instance:
+            # Serialize the instance for the response
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             # Return an error response if the data is not valid
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
