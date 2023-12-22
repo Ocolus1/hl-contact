@@ -837,12 +837,12 @@ def a2p_ein_user_content(driver, sub_user, case1, case2, case3):
 
     time.sleep(5)
 
-    # # Submit to register
-    # driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
-    # print()
-    # print("Clicked continue ")
+    # Submit to register
+    driver.find_element(By.CSS_SELECTOR, "button.n-button.n-button--primary-type").click()
+    print()
+    print("Clicked continue ")
 
-    # time.sleep(5)
+    time.sleep(5)
 
 
 # NO EIN
