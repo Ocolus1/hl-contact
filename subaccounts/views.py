@@ -398,8 +398,8 @@ class A2PRegistrationViewSet(viewsets.ModelViewSet):
             sub_user = SubAccount.objects.get(gohighlevel_id=locationId)
         except ObjectDoesNotExist:
             return Response(
-                {"error": "SubAccount matching query does not exist."},
-                status=status.HTTP_404_NOT_FOUND,
+                {"message": "A2PRegistration not successful, User does not exist"},
+                status=status.HTTP_200_OK,
             )
 
         if sub_user:
